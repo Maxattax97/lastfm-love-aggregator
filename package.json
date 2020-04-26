@@ -1,0 +1,33 @@
+{
+  "name": "lastfm-love-aggregator",
+  "version": "0.0.1",
+  "description": "Collects loved music and cleans up the metadata using MusicBrainz API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maxattax97/lastfm-love-aggregator.git"
+  },
+  "keywords": [
+    "lastfm",
+    "music",
+    "loved",
+    "musicbrainz",
+    "metadata"
+  ],
+  "author": "Max O'Cull",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Maxattax97/lastfm-love-aggregator/issues"
+  },
+  "homepage": "https://github.com/Maxattax97/lastfm-love-aggregator#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "got": "^11.0.2",
+    "lodash": "^4.17.15",
+    "p-queue": "^6.3.0",
+    "winston": "^3.2.1"
+  }
+}
