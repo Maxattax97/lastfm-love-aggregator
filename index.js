@@ -1,8 +1,10 @@
 const _ = require('lodash');
 const LastFM = require('./lib/LastFM.js');
 const AcoustID = require('./lib/AcoustID.js');
+const CoverArtArchive = require('./lib/CoverArtArchive.js');
 const Logger = require('./lib/Logger.js');
 const configuration = require('./api-keys.json');
+const util = require('util');
 
 const init = async() => {
     const lfm = new LastFM({
@@ -14,8 +16,21 @@ const init = async() => {
         apiKey: configuration.acoustidApiKey,
     });
 
-    const response = await aid.lookup();
-    console.log(response);
+    const caa = new CoverArtArchive();
+
+    const response = await aid.lookup({
+        //file: './samples/Ongoing Thing (feat. Oddisee).mp3'
+        //file: './samples/NEW DAWN.mp3'
+        //file: './samples/New Order (feat. Holybrune).mp3'
+        file: './samples/01 Intro.mp3'
+    });
+    console.log(util.inspect(response, { depth: null}));
+
+    console.log(aid.parseTrack(response));
+
+    console.log(await caa.getFront({
+        releaseId: response.mbid
+    }));
 
     //const response = await lfm.userGetLovedTracks({
         //user: 'Maxattax97',
