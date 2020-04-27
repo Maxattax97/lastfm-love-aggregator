@@ -1,5 +1,4 @@
 # LastFM Love Aggregator
-========================
 Collects loved music and cleans up the metadata using MusicBrainz API.
 
 # Setup
