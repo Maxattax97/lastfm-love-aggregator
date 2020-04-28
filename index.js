@@ -3,6 +3,7 @@ const util = require('util');
 const LastFM = require('./lib/LastFM.js');
 const AcoustID = require('./lib/AcoustID.js');
 const CoverArtArchive = require('./lib/CoverArtArchive.js');
+const Youtube = require('./lib/Youtube.js');
 const Logger = require('./lib/Logger.js');
 const configuration = require('./api-keys.json');
 
@@ -11,12 +12,11 @@ const init = async () => {
     apiKey: configuration.apiKey,
     sharedSecret: configuration.sharedSecret,
   });
-
   const aid = new AcoustID({
     apiKey: configuration.acoustidApiKey,
   });
-
   const caa = new CoverArtArchive();
+  const yt = new Youtube();
 
   const user = 'Maxattax97';
 
@@ -34,14 +34,20 @@ const init = async () => {
 
   Logger.info('Youtube URLs: %o', ytScrape);
 
-  // TODO: Download audio from Youtube.
+  Logger.info('Streaming audio from Youtube ...');
+  const audioDownload = await yt.download({
+    url: ytScrape[0].youtubeUrl,
+    filename: `${ytScrape[0].artist} - ${ytScrape[0].title}`,
+  });
+  Logger.info('Audio download: %o', audioDownload);
 
   Logger.info('Searching AcoustID for fingerprint ...');
   const response = await aid.lookup({
     // file: './samples/Ongoing Thing (feat. Oddisee).mp3'
     // file: './samples/NEW DAWN.mp3'
     // file: './samples/New Order (feat. Holybrune).mp3'
-    file: './samples/01 Intro.mp3',
+    // file: './samples/01 Intro.mp3',
+    file: audioDownload.path,
   });
   Logger.info('Entry found: %o', response);
   // console.log(util.inspect(response, { depth: null }));
