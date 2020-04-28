@@ -18,36 +18,41 @@ const init = async () => {
 
   const caa = new CoverArtArchive();
 
+  const user = 'Maxattax97';
+
+  Logger.info(`Retrieving LastFM loved tracks for ${user} ...`);
+  const lovedResponse = await lfm.userGetLovedTracks({
+    user,
+    limit: 10,
+  });
+
+  const loved = LastFM.parseTracks(lovedResponse.lovedtracks.track);
+  Logger.info('Loved songs: %o', loved);
+
+  Logger.info('Scraping loved tracks for Youtube URLs ...');
+  const ytScrape = await Promise.all(_.map([loved[0]], (track) => lfm.scrapeSong(track)));
+
+  Logger.info('Youtube URLs: %o', ytScrape);
+
+  // TODO: Download audio from Youtube.
+
+  Logger.info('Searching AcoustID for fingerprint ...');
   const response = await aid.lookup({
     // file: './samples/Ongoing Thing (feat. Oddisee).mp3'
     // file: './samples/NEW DAWN.mp3'
     // file: './samples/New Order (feat. Holybrune).mp3'
     file: './samples/01 Intro.mp3',
   });
-  console.log(util.inspect(response, { depth: null }));
+  Logger.info('Entry found: %o', response);
+  // console.log(util.inspect(response, { depth: null }));
 
-  console.log(aid.parseTrack(response));
+  Logger.info('Found track, fetching cover art ...');
+  const track = AcoustID.parseTrack(response);
 
-  console.log(await caa.getFront({
+  track.cover = await caa.getFront({
     releaseId: response.mbid,
-  }));
-
-  // const response = await lfm.userGetLovedTracks({
-  // user: 'Maxattax97',
-  // limit: 10
-  // });
-
-  // Logger.info(response);
-  // Logger.info(response.lovedtracks.track);
-  // const parsed = lfm.parseTracks(response.lovedtracks.track);
-  // Logger.info(parsed);
-
-  // Logger.info('Scraping for Youtube URLs');
-  // const scraped = await Promise.all(_.map(parsed, (track) => {
-  // return lfm.scrapeSong(track);
-  // }));
-
-  // Logger.info(scraped);
+  });
+  Logger.info('Finalized track: %o', track);
 };
 
 init();
