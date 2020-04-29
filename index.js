@@ -1,10 +1,13 @@
 const _ = require('lodash');
 const util = require('util');
-const LastFM = require('./lib/LastFM.js');
-const AcoustID = require('./lib/AcoustID.js');
-const CoverArtArchive = require('./lib/CoverArtArchive.js');
-const Youtube = require('./lib/Youtube.js');
-const Logger = require('./lib/Logger.js');
+const path = require('path');
+const fs = require('fs-extra');
+const LastFM = require('./lib/LastFM');
+const AcoustID = require('./lib/AcoustID');
+const CoverArtArchive = require('./lib/CoverArtArchive');
+const Youtube = require('./lib/Youtube');
+const Media = require('./lib/Media');
+const Logger = require('./lib/Logger');
 const configuration = require('./api-keys.json');
 
 const init = async () => {
@@ -26,11 +29,13 @@ const init = async () => {
     limit: 10,
   });
 
+  // console.log(util.inspect(lovedResponse, { depth: null }));
+
   const loved = LastFM.parseTracks(lovedResponse.lovedtracks.track);
   Logger.info('Loved songs: %o', loved);
 
   Logger.info('Scraping loved tracks for Youtube URLs ...');
-  const ytScrape = await Promise.all(_.map([loved[0]], (track) => lfm.scrapeSong(track)));
+  const ytScrape = await Promise.all(_.map([loved[9]], (track) => lfm.scrapeSong(track)));
 
   Logger.info('Youtube URLs: %o', ytScrape);
 
@@ -38,6 +43,7 @@ const init = async () => {
   const audioDownload = await yt.download({
     url: ytScrape[0].youtubeUrl,
     filename: `${ytScrape[0].artist} - ${ytScrape[0].title}`,
+    // url: 'https://youtu.be/AqqaavQzPtI',
   });
   Logger.info('Audio download: %o', audioDownload);
 
@@ -49,16 +55,46 @@ const init = async () => {
     // file: './samples/01 Intro.mp3',
     file: audioDownload.path,
   });
-  Logger.info('Entry found: %o', response);
-  // console.log(util.inspect(response, { depth: null }));
 
-  Logger.info('Found track, fetching cover art ...');
-  const track = AcoustID.parseTrack(response);
+  let track = null;
+  if (response.results.length > 0) {
+    Logger.info('Entry found: %o', response);
+    // console.log(util.inspect(response, { depth: null }));
 
-  track.cover = await caa.getFront({
-    releaseId: response.mbid,
+    Logger.info('Found track, fetching cover art ...');
+    track = AcoustID.parseTrack(response);
+
+    try {
+      const coverArt = await caa.getFront({
+        releaseId: track.mbid,
+      });
+      track.cover = coverArt.path;
+    } catch (err) {
+      Logger.warn(`Could not find cover art for ${track.mbid} `, err);
+    }
+
+    track.comment = track.mbid;
+  }
+
+  // Fill in whatever is missing with the youtube metadata.
+  track = _.defaults(track, {
+    title: ytScrape[0].title,
+    artist: ytScrape[0].artist,
+    cover: audioDownload.thumbnailPath,
+    comment: ytScrape[0].mbid, // Tag the mbid so we can check it later for syncing purposes..
   });
+
   Logger.info('Finalized track: %o', track);
+  await Media.setMetadata(_.defaults(track, {
+    file: audioDownload.path,
+    attachments: track.cover,
+  }));
+
+  const restingPlace = path.join(__dirname, `${track.artist} - ${track.title}.mp3`);
+  await fs.move(audioDownload.path, restingPlace, {
+    overwrite: true,
+  });
+  Logger.info(`Song relocated to ${restingPlace} with updated metadata`);
 };
 
 init();
