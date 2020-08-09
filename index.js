@@ -6,9 +6,13 @@ const LastFM = require('./lib/LastFM');
 const AcoustID = require('./lib/AcoustID');
 const CoverArtArchive = require('./lib/CoverArtArchive');
 const Youtube = require('./lib/Youtube');
+const MusicBrainz = require('./lib/MusicBrainz');
 const Media = require('./lib/Media');
 const Logger = require('./lib/Logger');
 const configuration = require('./api-keys.json');
+const pkg = require('./package.json');
+
+const USER_AGENT = `lastfm-love-aggregator/${pkg.version} ( https://github.com/Maxattax97/lastfm-love-aggregator )`;
 
 const init = async () => {
   const lfm = new LastFM({
@@ -20,6 +24,10 @@ const init = async () => {
   });
   const caa = new CoverArtArchive();
   const yt = new Youtube();
+  const mb = new MusicBrainz({
+    userAgent: USER_AGENT,
+    retryOn: true,
+  });
 
   const user = 'Maxattax97';
 
@@ -29,13 +37,14 @@ const init = async () => {
     limit: 10,
   });
 
+  const testIndex = 0;
   // console.log(util.inspect(lovedResponse, { depth: null }));
 
   const loved = LastFM.parseTracks(lovedResponse.lovedtracks.track);
   Logger.info('Loved songs: %o', loved);
 
   Logger.info('Scraping loved tracks for Youtube URLs ...');
-  const ytScrape = await Promise.all(_.map([loved[9]], (track) => lfm.scrapeSong(track)));
+  const ytScrape = await Promise.all(_.map([loved[testIndex]], (track) => lfm.scrapeSong(track)));
 
   Logger.info('Youtube URLs: %o', ytScrape);
 
@@ -59,25 +68,36 @@ const init = async () => {
   let track = null;
   if (response.results.length > 0) {
     Logger.info('Entry found: %o', response);
-    // console.log(util.inspect(response, { depth: null }));
-
-    Logger.info('Found track, fetching cover art ...');
     track = AcoustID.parseTrack(response);
+  } else {
+    Logger.info('No entries found from fingerprint, querying MusicBrainz database ...');
 
-    try {
-      const coverArt = await caa.getFront({
-        releaseId: track.mbid,
-      });
-      track.cover = coverArt.path;
-    } catch (err) {
-      Logger.warn(`Could not find cover art for ${track.mbid} `, err);
-    }
+    let mbRelease = null;
+    mbRelease = await mb.track({
+      mbid: loved[testIndex].mbid,
+    });
+    Logger.info('Entry found: %o', mbRelease);
 
-    track.comment = track.mbid;
+    track = MusicBrainz.parseTrack({
+      trackId: loved[testIndex].mbid,
+      apiResponse: mbRelease,
+    });
   }
 
+  try {
+    Logger.info('Found track, fetching cover art ...');
+    const coverArt = await caa.getFront({
+      releaseId: track.releaseId,
+    });
+    track.cover = coverArt.path;
+  } catch (err) {
+    Logger.warn(`Could not find cover art for ${track.releaseId} `, err);
+  }
+
+  track.comment = track.mbid;
+
   // Fill in whatever is missing with the youtube metadata.
-  track = _.defaults(track, {
+  track = _.defaultsDeep(track, {
     title: ytScrape[0].title,
     artist: ytScrape[0].artist,
     cover: audioDownload.thumbnailPath,
