@@ -10,3 +10,17 @@ details.
 ```
 npm install
 ```
+
+# Maintenance
+
+If you receive something like:
+
+```
+ERROR: No video formats found; please report this issue on https://yt-dl.org/bug . Make sure you are using the latest version; type  youtube-dl -U  to update. Be sure to call youtube-dl with the --verbose flag and include its complete output.
+```
+
+You'll need to update _Node's_ `youtube-dl`... To do that, run:
+
+```
+./node_modules/youtube-dl/bin/youtube-dl -U
+```
