@@ -32,3 +32,7 @@ You'll need to update _Node's_ `youtube-dl`... To do that, run:
 ```
 ./node_modules/youtube-dl/bin/youtube-dl -U
 ```
+
+# Known bugs
+
+- Strip `:/?"`... are there more characters?
