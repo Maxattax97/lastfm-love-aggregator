@@ -11,6 +11,14 @@ details.
 npm install
 ```
 
+# Usage
+
+At the moment, pagination isn't implemented, and the LastFM API allows listing up to 1000 loved songs. So you'll probably want this:
+
+```
+./index.js -u Maxattax97 -l 1000 -k 1000
+```
+
 # Maintenance
 
 If you receive something like:

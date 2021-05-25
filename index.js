@@ -129,32 +129,42 @@ const init = async () => {
                 track = AcoustID.parseTrack(response);
               } else {
                 let mbRelease = null;
-                mbRelease = await mb.track({
-                  mbid: lovedTrack.mbid,
-                });
-                Logger.info(`A MusicBrainz entry was found for ${asyncId}`);
+                try {
+                  mbRelease = await mb.track({
+                    mbid: lovedTrack.mbid,
+                  });
+                  Logger.info(`${asyncId} Found a MusicBrainz entry`);
 
-                track = MusicBrainz.parseTrack({
-                  trackId: lovedTrack.mbid,
-                  apiResponse: mbRelease,
-                });
-              }
-
-              try {
-                const coverArt = await caa.getFront({
-                  releaseId: track.releaseId,
-                });
-                track.cover = coverArt.path;
-                Logger.info(`A cover art was found for ${asyncId}`);
-              } catch (errCoverArt) {
-                if (errCoverArt.message.indexOf('NOT FOUND') >= 0) {
-                  // noop.
-                } else {
-                  Logger.warn(`${asyncId} Could not find cover art for ${track.releaseId}:`, errCoverArt.message);
+                  track = MusicBrainz.parseTrack({
+                    trackId: lovedTrack.mbid,
+                    apiResponse: mbRelease,
+                  });
+                } catch (errMusicBrainz) {
+                  Logger.warn(`${asyncId} Failed to find a MusicBrainz entry`);
                 }
               }
 
-              track.comment = track.mbid;
+              if (track) {
+                try {
+                  const coverArt = await caa.getFront({
+                    releaseId: track.releaseId,
+                  });
+                  track.cover = coverArt.path;
+                  Logger.info(`A cover art was found for ${asyncId}`);
+                } catch (errCoverArt) {
+                  if (errCoverArt.message.indexOf('NOT FOUND') >= 0) {
+                  // noop.
+                  } else {
+                    Logger.warn(`${asyncId} Could not find cover art for ${track.releaseId}:`, errCoverArt.message);
+                  }
+                }
+              }
+
+              if (track) {
+                track.comment = track.mbid;
+              } else {
+                track = {};
+              }
 
               // Fill in whatever is missing with the youtube metadata.
               track = _.defaultsDeep(track, {
@@ -165,10 +175,19 @@ const init = async () => {
               });
 
               Logger.debug(`${asyncId} Finalized track: %o`, track);
-              await Media.setMetadata(_.defaults(track, {
-                file: audioDownload.path,
-                attachments: track.cover,
-              }));
+              if (track.cover && track.cover.indexOf('.jpg') >= 0) {
+                Logger.debug(`${asyncId} Embedding cover with metadata ...`);
+                await Media.setMetadata(_.defaults(track, {
+                  file: audioDownload.path,
+                  attachments: track.cover,
+                }));
+              } else {
+                Logger.warn(`${asyncId} Embedding only metadata ... this is due to a bug in the Youtube API and pending workaround in youtube-dl, see: https://github.com/ytdl-org/youtube-dl/issues/25687`);
+
+                await Media.setMetadata(_.defaults(track, {
+                  file: audioDownload.path,
+                }));
+              }
 
               // TODO: Organize into folders.
               const restingPlace = path.join(storagePath, `${track.artist} - ${track.title}.mp3`);
@@ -181,6 +200,7 @@ const init = async () => {
                 Logger.warn(`${asyncId} can't be downloaded at this time due to a bug in the Youtube API and pending workaround in youtube-dl, see: https://github.com/ytdl-org/youtube-dl/issues/25687`);
               } else if (errYtDl.message && errYtDl.message.indexOf('Bad Request') >= 0) {
                 Logger.warn(`Youtube is prohibitting download of ${asyncId} (reasons could include: age-locked, spam protection, DNS errors, or other issues) -- skipping...`);
+                Logger.debug(errYtDl);
               } else {
                 Logger.error(`${asyncId} Failed to download audio from ${ytScrape.youtubeUrl}: `, errYtDl);
               }
