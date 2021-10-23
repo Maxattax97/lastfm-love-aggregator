@@ -189,8 +189,9 @@ const init = async () => {
                 }));
               }
 
-              // TODO: Organize into folders.
-              const restingPlace = path.join(storagePath, `${track.artist} - ${track.title}.mp3`);
+              // TODO: Organize into folders with an CLI option.
+			  const artistTitleFilename = `${track.artist} - ${track.title}`.replace(/[<>:"|?*\/\\]/g, ' ').trim();
+              const restingPlace = path.join(storagePath, `${artistTitleFilename}.mp3`);
               await fs.move(audioDownload.path, restingPlace, {
                 overwrite: true,
               });

@@ -33,6 +33,10 @@ You'll need to update _Node's_ `youtube-dl`... To do that, run:
 ./node_modules/youtube-dl/bin/youtube-dl -U
 ```
 
+## YouTube Throttling
+
+Classic youtube-dl is subject to throttling by YouTube. I subbed out the binary in the node module with [yt-dlp](https://github.com/yt-dlp/yt-dlp) and it seemed to perform much better.
+
 # Known bugs
 
-- Strip `:/?"`... are there more characters?
+- Strip `<>:"/\|?*`... are there more characters?
