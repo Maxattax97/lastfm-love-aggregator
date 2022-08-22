@@ -109,7 +109,7 @@ const init = async () => {
               Logger.info(`Downloading audio for ${asyncId} ...`);
               const audioDownload = await yt.download({
                 url: ytScrape.youtubeUrl,
-                filename: `${ytScrape.artist} - ${ytScrape.title}`,
+                filename: `${ytScrape.artist} - ${ytScrape.title}`.replace(/[<>:"|?*\/\\]/g, ' ').trim(),
               });
               Logger.debug(`${asyncId} Audio download: %o`, audioDownload);
 
