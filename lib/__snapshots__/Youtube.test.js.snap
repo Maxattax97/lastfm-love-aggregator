@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Youtube should download audio from a URL 1`] = `
+{
+  "path": "/tmp/be12f83680e058e435c561e6e3fecac6/Ir7UmJ_foHs.mp3",
+  "thumbnailPath": "/tmp/be12f83680e058e435c561e6e3fecac6/Ir7UmJ_foHs.webp",
+}
+`;

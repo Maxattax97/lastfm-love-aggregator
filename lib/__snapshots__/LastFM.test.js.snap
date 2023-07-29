@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LastFM should scrape [YOUR NAME by DVRST] 1`] = `
+{
+  "artist": "DVRST",
+  "artistMbid": "b04b7c24-59d2-47f8-8ca8-bcf6f6d106ed",
+  "lastfmUrl": "https://www.last.fm/music/DVRST/_/YOUR+NAME",
+  "mbid": "750ee163-e687-445e-a62b-10cf2f75dd83",
+  "title": "YOUR NAME",
+  "youtubeUrl": "https://www.youtube.com/watch?v=W9GXqCBAZb0",
+}
+`;
