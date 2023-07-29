@@ -1,6 +1,6 @@
 {
   "name": "lastfm-love-aggregator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Collects loved music and cleans up the metadata using MusicBrainz API.",
   "exports": "./index.js",
   "type": "module",
