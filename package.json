@@ -14,7 +14,9 @@
     "lint": "eslint .",
     "fix": "eslint . --fix",
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
-    "snap": "node --experimental-vm-modules ./node_modules/.bin/jest --updateSnapshot"
+    "snap": "node --experimental-vm-modules ./node_modules/.bin/jest --updateSnapshot",
+    "updateYoutubeDL": "./node_modules/youtube-dl/bin/youtube-dl -U",
+    "ci": "npm run updateYoutubeDL && npm run test"
   },
   "repository": {
     "type": "git",
