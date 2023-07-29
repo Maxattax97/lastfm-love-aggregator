@@ -1,4 +1,5 @@
 # LastFM Love Aggregator
+
 Collects loved music and cleans up the metadata using MusicBrainz API.
 
 # Setup
@@ -40,3 +41,4 @@ Classic youtube-dl is subject to throttling by YouTube. I subbed out the binary 
 # Known bugs
 
 - Strip `<>:"/\|?*`... are there more characters?
+- the old `youtube-dl` module is deprecated, refactor to use a module like [`youtube-dl-exec`](https://www.npmjs.com/package/youtube-dl-exec) instead
