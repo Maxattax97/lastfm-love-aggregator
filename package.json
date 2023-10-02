@@ -50,7 +50,7 @@
     "tempy": "^0.5.0",
     "winston": "^3.3.3",
     "yargs": "^17.7.2",
-    "youtube-dl": "^3.0.2"
+    "youtube-dl": "^3.5.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.6.2",
